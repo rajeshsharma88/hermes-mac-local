@@ -1,0 +1,47 @@
+# secrets / credentials
+.env
+auth.json
+config.yaml
+shared/nous_auth.json
+shared/nous_auth.lock
+*.lock
+
+# nested repo, tracked separately on GitHub
+hermes-agent/
+
+# large / regenerable runtime directories
+node/
+bin/
+cache/
+logs/
+backups/
+sessions/
+sandboxes/
+pairing/
+hooks/
+cron/
+audio_cache/
+image_cache/
+__pycache__/
+terminal-sessions/
+runtime/
+.curator_backups/
+
+# runtime state / caches / db
+state.db
+state.db-shm
+state.db-wal
+*_cache.json
+*_cache.yaml
+*.etag
+processes.json
+web-ui-build-stamp.json
+.npm_lock_hash_*
+.update_check
+
+# local shell/command history (may contain pasted secrets)
+.hermes_history
+
+# logs (leak live bot tokens / request data)
+*.log
+telegram_bot.log
