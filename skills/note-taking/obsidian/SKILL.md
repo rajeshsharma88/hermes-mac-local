@@ -66,11 +66,3 @@ Use `patch` for focused note changes when the current content gives you stable c
 ## Wikilinks
 
 Obsidian links notes with `[[Note Name]]` syntax. When creating notes, use these to link related content.
-
-## External integrations
-
-When an external service (a Telegram bot, a webhook, a script) needs to write notes or tasks into the vault, see the `telegram-vault-bridge` skill. It covers the infrastructure pattern: long-polling bot, config from `~/.hermes/.env`, command-to-frontmatter mapping, handler-filter ordering, duplicate-process cleanup, and the pitfalls that come up (authorisation by Telegram user ID — not the bot's own ID, `.hermes/.env` file-tool writes being blocked, de-conflicting filenames, TaskNotes schema injection, and natural-language date parsing for `due:` fields).
-
-## Vault path pitfalls
-
-The actual vault directory may contain a typo in its name (e.g. `Obisidian` not `Obsidian`). Always verify the path with `terminal` (`ls`) or `search_files` before writing — a write to a non-existent path silently creates the wrong folder.
