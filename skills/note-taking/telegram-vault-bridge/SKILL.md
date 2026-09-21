@@ -64,6 +64,18 @@ Before shipping `@task`, inspect a real task note already in `06 - Tasks/` (or t
 
 The fix is to write the bot's `write_task_file` body from a real vault task note as a template, not from a generic example.
 
+### The Hermes gateway may already own the token — polling it from a standalone script is the real duplicate
+
+Before assuming a standalone `telegram_task_bot.py` (or any long-polling script) is the intended owner, check whether the **Hermes gateway** is also polling Telegram with the same token. When `platforms.telegram.enabled: true` in `~/.hermes/config.yaml`, the gateway (auto-started via `ai.hermes.gateway.plist` LaunchAgent) connects to the same `TELEGRAM_BOT_TOKEN` and long-polls getUpdates. Running the standalone script on top produces intermittent 409 Conflicts on BOTH sides and silently drops messages — the exact "bot not responding" symptom.
+
+**Diagnosis:** `tail ~/.hermes/logs/gateway.log` — if it shows `Connected to Telegram (polling mode)` / `polling confirmed healthy`, the gateway owns the line. `launchctl list` shows the gateway LaunchAgent. A second poller (+ my own test launch) drives the gateway to 5 failed conflict retries and a clean self-shutdown (`No connected messaging platforms remain. Shutting down gateway cleanly`), after which nothing is polling at all.
+
+**Decision:** only ONE thing may poll a token. If the user wants the full gateway agent on Telegram, disable/remove the standalone bot's LaunchAgent (`launchctl remove` + move its `.plist` out of `~/Library/LaunchAgents/`) so no other process can claim the token — and teach the gateway the vault convention instead. If they want the lean script, set `platforms.telegram.enabled: false` in config.
+
+### Allowed-user ID is often the bot's OWN ID
+
+The `.env` default `TELEGRAM_ALLOWED_USERS` commonly gets set to the **bot's own numeric ID** (from `getMe`/BotFather) instead of the human's. The gateway log signature: `Blocked unauthorized user <id>` repeated for a single ID while the configured allowlist equals the bot's ID. Fix: the human's real ID comes from messaging `@userinfobot`; set `TELEGRAM_ALLOWED_USERS` to that. Don't trust the current value just because a UID is present.
+
 ### Duplicate bot processes cause 409 conflicts
 
 Running the bot more than once — or failing to kill a prior process before relaunching — produces Telegram 409 Conflict errors (`terminated by other getUpdates request`). The bot log shows `ok: False` and messages get silently dropped. Symptoms: the bot appears to be running (polling logs show HTTP 200s) but messages sent to it get no reply.

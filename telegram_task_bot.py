@@ -443,7 +443,7 @@ def md_title(path):
 def today_daily_path():
     d = date.today()
     folder = VAULT_ROOT / "05 - Periodic Notes" / "Daily"
-    pat = re.compile(rf"^{d.isoformat}\(.*\)\.md$", re.I)
+    pat = re.compile(rf"^{d.isoformat()}\(.*\)\.md$", re.I)
     if folder.exists():
         for c in folder.iterdir():
             if c.is_file() and pat.match(c.name):
