@@ -6,8 +6,9 @@ shared/nous_auth.json
 shared/nous_auth.lock
 *.lock
 
-# nested repo, tracked separately on GitHub
-hermes-agent/
+# nested repo, tracked separately on GitHub (anchored to repo root so the
+# skills/autonomous-ai-agents/hermes-agent/ *skill* is not over-matched)
+/hermes-agent/
 
 # large / regenerable runtime directories
 node/
