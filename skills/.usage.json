@@ -38,14 +38,14 @@
     "first_seen_at": null,
     "last_patched_at": "2026-09-21T01:13:26.357634+00:00",
     "last_reused_patch_generation": 2,
-    "last_used_at": "2026-09-21T02:17:56.664500+00:00",
-    "last_viewed_at": "2026-09-21T02:17:56.663267+00:00",
+    "last_used_at": "2026-09-21T18:45:50.404914+00:00",
+    "last_viewed_at": "2026-09-21T18:45:50.403503+00:00",
     "patch_count": 2,
     "patch_generation": 2,
     "pinned": false,
     "state": "active",
-    "use_count": 7,
-    "view_count": 7
+    "use_count": 9,
+    "view_count": 9
   },
   "hermes-config-sync": {
     "archived_at": null,
@@ -62,6 +62,22 @@
     "state": "active",
     "use_count": 0,
     "view_count": 0
+  },
+  "hermes-model-providers": {
+    "archived_at": null,
+    "created_at": "2026-09-21T18:54:27.327283+00:00",
+    "created_by": "agent",
+    "first_seen_at": null,
+    "last_patched_at": null,
+    "last_reused_patch_generation": 0,
+    "last_used_at": "2026-09-21T19:47:41.049613+00:00",
+    "last_viewed_at": "2026-09-21T19:47:41.047360+00:00",
+    "patch_count": 0,
+    "patch_generation": 0,
+    "pinned": false,
+    "state": "active",
+    "use_count": 1,
+    "view_count": 1
   },
   "obsidian": {
     "archived_at": null,
