@@ -212,3 +212,4 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 - **Secrets in `.env`, settings in `config.yaml`** — never tell a user to put a non-credential setting in `.env`.
 - **Profile-safe paths** — `get_hermes_home()` in code, `$HERMES_HOME` when resolving paths in a session.
 - **Never hand-edit `config.yaml` for the user** — use `hermes config set KEY VAL`; a stray indent can corrupt the file and break the live gateway.
+- **Don't trust `hermes doctor` web lines** — `✓ web search (parallel)` only proves the backend *module imports*, not that a backend is *keyed*. With no `*API_KEY` in `.env` and no `web.search_backend` in `config.yaml`, Hermes silently rides the keyless free ring (exa → parallel → firecrawl → keenable round-robin) and gets intermittent 403s. Diagnose via the error string ("Keyless Firecrawl search failed") and check keys directly.
