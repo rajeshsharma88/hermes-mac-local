@@ -1,9 +1,9 @@
 {
-  "last_report_path": "/Users/rajeshcsharma/.hermes/logs/curator/20261005-011323",
+  "last_report_path": "/Users/rajeshcsharma/.hermes/logs/curator/20261005-040545",
   "last_run_at": "2026-10-05T01:13:23.604557+00:00",
-  "last_run_duration_seconds": 1.443447,
-  "last_run_summary": "auto: no changes; llm: skipped (consolidation off)",
-  "last_run_summary_shown_at": null,
+  "last_run_duration_seconds": 1.178597,
+  "last_run_summary": "auto: 2 marked stale; llm: skipped (consolidation off)",
+  "last_run_summary_shown_at": "2026-10-05T01:13:23.604557+00:00",
   "paused": false,
   "run_count": 2
 }

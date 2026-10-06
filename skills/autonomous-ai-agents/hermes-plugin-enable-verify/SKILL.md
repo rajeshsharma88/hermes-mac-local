@@ -60,6 +60,38 @@ Output ends with "Takes effect on next session." That is the CLI telling you
 the live process is stale — honor it. The config lands at
 `config.yaml` `plugins.enabled:`.
 
+`hermes plugins install <id> --enable --yes-deps` goes further: it installs,
+enables, resolves Python deps, and reloads the gateway in one run, ending with
+`Gateway reloaded plugins — deferred: tools (next session).` Read that trailer
+as fact, not boilerplate:
+
+- the **gateway already reloaded** — do not run `hermes gateway restart`
+  again; you would only drop in-flight platform connections and webhook routes;
+- **tool discovery is deferred to the next session** and no restart brings the
+  tools into the current one. `tool_search` will return no matches for the
+  new plugin's tools this turn, even with the gateway freshly reloaded.
+
+"No tools found" immediately after an `install --enable` is therefore expected
+state, not a failed install. Verify the install landed (`hermes plugins list`
+shows the version + `enabled`), tell the user tools arrive next session, and
+move on.
+
+`hermes plugins install <id> --enable --yes-deps` goes further: it installs,
+enables, resolves Python deps, and reloads the gateway in one run, ending with
+`Gateway reloaded plugins — deferred: tools (next session).` Read that trailer
+as fact, not boilerplate:
+
+- the **gateway already reloaded** — do not run `hermes gateway restart`
+  again; you would only drop in-flight platform connections and webhook routes;
+- **tool discovery is deferred to the next session** and no restart brings the
+  tools into the current one. `tool_search` will return no matches for the
+  new plugin's tools this turn, even with the gateway freshly reloaded.
+
+"No tools found" immediately after an `install --enable` is therefore expected
+state, not a failed install. Verify the install landed (`hermes plugins list`
+shows the version + `enabled`), tell the user tools arrive next session, and
+move on.
+
 ### 2. Restart the gateway
 
 ```bash
@@ -137,6 +169,44 @@ launch):
 ls ~/.hermes/hermes-agent/apps/desktop/{node_modules,dist,build} 2>&1
 # all three absent → never built; `hermes desktop` must build on first run
 ```
+
+## Two plugin architectures — verify differently
+
+The verification ladder above assumes the gateway-mounted shape. Some plugins
+ship their own server and spawn it as a detached child (`subprocess.Popen(...,
+start_new_session=True)`); those never mount anything under
+`/api/plugins/<id>/`, so a `404` there is not evidence of failure.
+
+| | Gateway-mounted | Standalone-server |
+|---|---|---|
+| Ships | Python API routes, and/or `desktop/plugin.js` | A separate HTTP server + tools that start/stop it (`*_start`, `*_status`, `*_stop`) |
+| Lives at | Gateway port, `/api/plugins/<id>/...` | Its own port, read from its own config (`~/.hermes/plugin-data/<id>/config.json`) |
+| Verify by | Probing the route → `200` mounted, `404` needs gateway restart | Starting it, then probing **its** port; confirm the config the tool actually read |
+| Typical | `home-dashboard`, desktop widgets | Memory/data viewers, external bridges |
+
+Detect the shape before picking a verification path: does the plugin declare
+`*_start` / `*_stop` tools, and does its code open its own socket? If so, the
+gateway routes are irrelevant — the only meaningful probe is the server it
+launches.
+
+## Two plugin architectures — verify differently
+
+The verification ladder above assumes the gateway-mounted shape. Some plugins
+ship their own server and spawn it as a detached child (`subprocess.Popen(...,
+start_new_session=True)`); those never mount anything under
+`/api/plugins/<id>/`, so a `404` there is not evidence of failure.
+
+| | Gateway-mounted | Standalone-server |
+|---|---|---|
+| Ships | Python API routes, and/or `desktop/plugin.js` | A separate HTTP server + tools that start/stop it (`*_start`, `*_status`, `*_stop`) |
+| Lives at | Gateway port, `/api/plugins/<id>/...` | Its own port, read from its own config (`~/.hermes/plugin-data/<id>/config.json`) |
+| Verify by | Probing the route → `200` mounted, `404` needs gateway restart | Starting it, then probing **its** port; confirm the config the tool actually read |
+| Typical | `home-dashboard`, desktop widgets | Memory/data viewers, external bridges |
+
+Detect the shape before picking a verification path: does the plugin declare
+`*_start` / `*_stop` tools, and does its code open its own socket? If so, the
+gateway routes are irrelevant — the only meaningful probe is the server it
+launches.
 
 ## Third-party plugins
 
@@ -217,3 +287,35 @@ different route tables. A `404` there is not evidence the plugin failed to
 - **Don't promise live delivery or visibility you haven't probed.** "The Home
   tab will appear on refresh" is a claim about a UI you cannot render here.
   State what you verified and what you couldn't reach.
+- **Auto-generated config is not vetted config.** A plugin that ships its own
+  server writes its config on first load at
+  `~/.hermes/plugin-data/<id>/config.json` with whatever upstream defaults it
+  ships. Inspect `host` and `auth_enabled` there before ever starting it:
+  `0.0.0.0` + `auth_enabled: false` is a real shipped default for memory and
+  data viewers, and unlike `hermes dashboard` (loopback bind behind an OAuth
+  or token gate) nothing else stands between your memory store and the LAN.
+  Fix the bind and enable auth first; start second.
+- **A viewer with no data source serves an empty UI, not an error.**
+  Dashboards and inspectors usually depend on a sibling plugin or store that is
+  absent. Check the backing store path actually resolves and contains data
+  before calling the dashboard "working" — a `200` with zero rows proves the
+  server runs, not that the pipeline is wired.
+- **Don't restart the gateway to fetch plugin tools mid-session.** Tool
+  registration is deferred to the next session regardless of how freshly the
+  gateway reloaded. Restarting buys nothing and costs in-flight connections.
+- **Auto-generated config is not vetted config.** A plugin that ships its own
+  server writes its config on first load at
+  `~/.hermes/plugin-data/<id>/config.json` with whatever upstream defaults it
+  ships. Inspect `host` and `auth_enabled` there before ever starting it:
+  `0.0.0.0` + `auth_enabled: false` is a real shipped default for memory and
+  data viewers, and unlike `hermes dashboard` (loopback bind behind an OAuth
+  or token gate) nothing else stands between your memory store and the LAN.
+  Fix the bind and enable auth first; start second.
+- **A viewer with no data source serves an empty UI, not an error.**
+  Dashboards and inspectors usually depend on a sibling plugin or store that is
+  absent. Check the backing store path actually resolves and contains data
+  before calling the dashboard "working" — a `200` with zero rows proves the
+  server runs, not that the pipeline is wired.
+- **Don't restart the gateway to fetch plugin tools mid-session.** Tool
+  registration is deferred to the next session regardless of how freshly the
+  gateway reloaded. Restarting buys nothing and costs in-flight connections.
